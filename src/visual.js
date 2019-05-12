@@ -23,7 +23,7 @@ $("#inputfile").change(function () {
     }
   };
 });
-
+var colorCount=0
 function draw(data) {
   var date = [];
   data.forEach(element => {
@@ -57,25 +57,12 @@ function draw(data) {
   // 选择颜色
   function getColor(d) {
     var r = 0.0;
-    if (changeable_color) {
-      var colorRange = d3.interpolateCubehelix(config.color_range[0], config.color_range[1]);
-      if (divide_changeable_color_by_type && d["type"] in config.color_ranges) {
-        var colorRange = d3.interpolateCubehelix(config.color_ranges[d["type"]][0], config.color_ranges[d["type"]][1]);
-      }
-      var v =
-        Math.abs(rate[d.name] - rate["MIN_RATE"]) /
-        (rate["MAX_RATE"] - rate["MIN_RATE"]);
-      if (isNaN(v) || v == -1) {
-        return colorRange(0.6);
-      }
-      return colorRange(v);
-    }
 
     if (d[divide_color_by] in config.color)
       return config.color[d[divide_color_by]];
     else {
-      return d3.schemeCategory10[
-        Math.floor(d[divide_color_by].charCodeAt() % 10)
+      return d3.schemeSet3[
+        Math.floor(d["type"].charCodeAt() % 12)
       ];
     }
   }
@@ -467,9 +454,9 @@ function draw(data) {
         .append("image")
         .attr("x", "0")
         .attr("y", "0")
-        .attr("width", "40")
-        .attr("height", "40")
-        .attr("href", d => config.imgs[d.name]);
+        .attr("width", "80")
+        .attr("height", "80")
+        .attr("href", d => config.imgs[d.type]);
 
       barEnter
         .append("circle")
@@ -480,12 +467,11 @@ function draw(data) {
         .transition("a")
         .delay(500 * interval_time)
         .duration(2490 * interval_time)
-        .attr("stroke", d => getColor(d))
         .attr("stroke-width", "4px")
         .attr("x", -16)
-        .attr("cx", -22)
+        .attr("cx", -40)
         .attr("cy", 13)
-        .attr("r", 40 / 2)
+        .attr("r", 40)
         .attr("fill-opacity", 1);
     }
     barEnter
@@ -498,13 +484,14 @@ function draw(data) {
         }
       })
       .attr("fill-opacity", 0)
-      .attr("height", 26)
+      .attr("height", 50)
       .attr("y", 50)
       .style("fill", d => getColor(d))
       .transition("a")
       .delay(500 * interval_time)
       .duration(2490 * interval_time)
-      .attr("y", 0)
+      .attr("y", -12)
+      .attr("x", -3)
       .attr("width", d => xScale(xValue(d)))
       .attr("fill-opacity", 1);
 
@@ -547,7 +534,6 @@ function draw(data) {
           return xScale(currentData[currentData.length - 1].value);
         }
       })
-      .attr("stroke", d => getColor(d))
       .attr("class", function () {
         return "barInfo";
       })
@@ -672,9 +658,6 @@ function draw(data) {
         .style("fill", d => getColor(d))
         .attr("width", d => xScale(xValue(d)));
     }
-    barUpdate.select(".barInfo").attr("stroke", function (d) {
-      return getColor(d);
-    });
 
     if (config.use_img) {
       barUpdate.select("circle").attr("stroke", function (d) {
